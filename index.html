@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>오목 게임</title>
+  <style>
+    body{
+      background-color: grey;
+    }
+    .board {
+      display: flex;
+      flex-wrap: wrap;
+      width: 600px;
+      height: 600px;
+    }
+    .board .cell {
+      width: 4%;
+      height: 4%;
+      box-sizing: border-box;
+      border: 1px solid black;
+      cursor: pointer;
+    }
+    
+  </style>
+</head>
+<body>
+  <div class="board"></div>
+  <script>
+    const boardSize = 25; // 게임판 크기
+    const board = []; // 게임판 상태를 저장할 배열
+    let currentPlayer = 1; // 현재 플레이어 (1: 흑돌, 2: 백돌)
+    let gameOver = false; // 게임 종료 여부
+
+    const boardElement = document.querySelector('.board');
+
+    // 게임판 초기화
+    function initializeBoard() {
+      for (let i = 0; i < boardSize; i++) {
+        board[i] = [];
+        for (let j = 0; j < boardSize; j++) {
+          board[i][j] = 0;
+        }
+      }
+    }
+
+    // 게임판 렌더링
+    function renderBoard() {
+      boardElement.innerHTML = '';
+      for (let i = 0; i < boardSize; i++) {
+        for (let j = 0; j < boardSize; j++) {
+          const cell = document.createElement('div');
+          cell.classList.add('cell');
+          cell.dataset.row = i;
+          cell.dataset.col = j;
+          cell.addEventListener('click', handleClick);
+          if (board[i][j] === 1) {
+            cell.style.backgroundColor = 'black';
+            cell.style.borderRadius = `50px`;
+          } else if (board[i][j] === 2) {
+            cell.style.backgroundColor = 'white';
+            cell.style.borderRadius = `50px`
+          }
+          boardElement.appendChild(cell);
+        }
+      }
+    }
+
+    // 클릭 이벤트 핸들러
+    function handleClick(event) {
+      if (gameOver) return;
+      
+      const row = parseInt(event.target.dataset.row);
+      const col = parseInt(event.target.dataset.col);
+      
+      if (board[row][col] !== 0) return;
+      
+      board[row][col] = currentPlayer;
+      renderBoard();
+      
+      if (checkWin(row, col)) {
+        gameOver = true;
+        alert(`플레이어 ${currentPlayer}가 이겼습니다!`);
+      } else {
+        currentPlayer = currentPlayer === 1 ? 2 : 1;
+      }
+    }
+
+    // 승리 조건 확인
+    function checkWin(row, col) {
+      return (
+        checkDirection(row, col, 1, 0) || // 가로 방향
+        checkDirection(row, col, 0, 1) || // 세로 방향
+        checkDirection(row, col, 1, 1) || // 대각선 방향 (↘)
+        checkDirection(row, col, 1, -1) // 대각선 방향 (↙)
+      );
+    }
+
+    // 특정 방향으로 돌을 세어 승리 여부 확인
+    function checkDirection(row, col, rowDir, colDir) {
+      const color = board[row][col];
+      let count = 1;
+      let r, c;
+      
+      // 현재 위치로부터 주어진 방향으로 돌의 개수를 센다
+      // 같은 색의 돌이 연속으로 5개가 되면 승리
+      r = row + rowDir;
+      c = col + colDir;
+      while (r >= 0 && r < boardSize && c >= 0 && c < boardSize && board[r][c] === color) {
+        count++;
+        r += rowDir;
+        c += colDir;
+      }
+      
+      r = row - rowDir;
+      c = col - colDir;
+      while (r >= 0 && r < boardSize && c >= 0 && c < boardSize && board[r][c] === color) {
+        count++;
+        r -= rowDir;
+        c -= colDir;
+      }
+      
+      return count >= 5;
+    }
+
+    // 게임 시작
+    function startGame() {
+      initializeBoard();
+      renderBoard();
+    }
+
+    // 게임 초기화
+    function resetGame() {
+      currentPlayer = 1;
+      gameOver = false;
+      initializeBoard();
+      renderBoard();
+    }
+
+    // 게임 시작
+    startGame();
+  </script>
+</body>
+</html>
